@@ -3,10 +3,10 @@
   "fuente": "Datos operativos CEML + precio de mercado local (mar-2026)",
   "vigencia": "2026-03",
   "combustible": {
-    "tipo": "nafta",
+    "tipo": "Diesel",
     "precio_por_litro_ars": 2425.0,
     "moneda": "ARS",
-    "nota": "Precio nafta común en Montecarlo, Misiones - marzo 2026"
+    "nota": "Precio Diesel en Montecarlo, Misiones - marzo 2026"
   },
   "vehiculo_promedio_flota": {
     "rendimiento_km_por_litro": 10.0,
