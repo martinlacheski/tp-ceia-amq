@@ -1,0 +1,8 @@
+{
+"type": "FeatureCollection",
+"name": "DISTRITO H",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{"type":"Feature","properties":{"cadgeom_type":"CADLWPolyline","thickness":0.0,"color":"#00FF3FFF"},"geometry":{"type":"LineString","coordinates":[[-54.878048067766748,-26.657873962540773,0.0],[-54.911331744896238,-26.65836531108809,0.0],[-54.948006408886229,-26.668633112925605,0.0],[-54.936824948672005,-26.807655875778611,0.0],[-54.843573242477468,-26.796619429378534,0.0],[-54.878048067766748,-26.657873962540773,0.0]]}}
+]
+}

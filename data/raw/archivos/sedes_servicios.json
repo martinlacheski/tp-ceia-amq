@@ -1,0 +1,41 @@
+{
+  "descripcion": "Ubicaciones de las sedes de atención de la CEML por servicio",
+  "fuente": "Datos operativos CEML - Cooperativa Eléctrica de Montecarlo Limitada",
+  "sistema_coordenadas": "WGS84 (lat/lon decimal)",
+  "nota": "Usar para calcular distancias por camino (routing) desde trámites/reclamos a la sede correspondiente según el servicio involucrado",
+  "sedes": [
+    {
+      "id": "energia",
+      "nombre": "Sede Energía Eléctrica y Alumbrado Público",
+      "servicios": ["ENERGIA", "ENERGIA PREPAGA", "ALUMBRADO PUBLICO", "AP"],
+      "lat": -26.56546259837734,
+      "lon": -54.75411204580389,
+      "direccion": "Av. El Libertador 2541, N3384ALB Montecarlo, Misiones",
+      "telefono": "(03751) 480250",
+      "email": "coop@cemlmontecarlo.com.ar"
+    },
+    {
+      "id": "agua_cloacas",
+      "nombre": "Sede Agua Potable y Cloacas",
+      "servicios": ["AGUA", "CLOACAS", "AGUA POTABLE", "AGUA Y CLOACAS"],
+      "lat": -26.582934060558625,
+      "lon": -54.73012469788584,
+      "direccion": "Montecarlo, Misiones (sede administrativa agua)",
+      "telefono": "(03751) 480250"
+    },
+    {
+      "id": "tv_internet",
+      "nombre": "Sede Televisión e Internet",
+      "servicios": ["TELEVISION", "INTERNET", "TV", "TV E INTERNET", "TELEVISION E INTERNET", "TRANSMISION DE DATOS", "TV CABLE", "TV AIRE"],
+      "lat": -26.568394449145398,
+      "lon": -54.754005706687934,
+      "direccion": "Montecarlo, Misiones (sede técnica TV/Internet)",
+      "telefono": "(03751) 480250"
+    }
+  ],
+  "notas_distancia": {
+    "metodo_recomendado": "OSRM o GraphHopper con mapa OpenStreetMap de Misiones para distancia por caminos",
+    "fallback": "distancia euclidiana en grados × 111.32 km/grado (±15% error en zona rural)",
+    "epsg_proyectado": "EPSG:32721 (UTM Zona 21S) para cálculos métricos precisos"
+  }
+}

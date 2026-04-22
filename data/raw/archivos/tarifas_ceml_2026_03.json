@@ -1,0 +1,108 @@
+{
+  "descripcion": "Valores de Tasas, Derechos Conexiones y Otros - CEML",
+  "vigencia_desde": "2026-03-02",
+  "version": "mar-2026",
+  "fecha_documento": "2026-02-27",
+  "fuente": "TP/Archivos/Tasas 03-2026.pdf",
+  "moneda": "ARS",
+  "iva": 0.21,
+  "nota_precios": "Todos los valores con IVA incluido (21%) salvo indicación contraria",
+
+  "administrativos": {
+    "transferencia_acciones": 38200,
+    "cargo_adm_entrega_cuenta": 400,
+    "cargo_adm_cheque_rechazado": 17200,
+    "factibilidad_suministro_individual_1_servicio": 11500,
+    "factibilidad_suministro_individual_mas_1_servicio": 11100,
+    "factibilidad_suministro_barrios_viviendas": 36800
+  },
+
+  "energia_electrica": {
+    "nota": "Monofásico y Trifásico mismo valor salvo Control de medidor",
+    "derecho_adm_conexion_monofasico": 11700,
+    "derecho_adm_conexion_trifasico": 11700,
+    "reconexion_mora": 17200,
+    "reconexion_a_pedido_monofasico": 15500,
+    "reconexion_a_pedido_trifasico": 15500,
+    "desconexion_transitoria": 15500,
+    "control_medidor_monofasico": 19300,
+    "control_medidor_trifasico": 31200,
+    "aumento_potencia_por_hp": 126000,
+    "alquiler_caja_provisoria_monofasico": 11100,
+    "alquiler_caja_provisoria_trifasico": 22200,
+    "costos_conexion_nueva": {
+      "nota": "Contado - incluye acciones + cargo de conexión",
+      "zona_I_urbana_monofasico": 589500,
+      "zona_I_urbana_trifasico": null,
+      "zona_II_rural_poblado_monofasico": 706100,
+      "zona_II_rural_poblado_trifasico": 339900,
+      "zona_III_rural_medio_monofasico": null,
+      "zona_IV_rural_alejado_monofasico": null,
+      "zona_V_quintas_turisticas_monofasico": 1428700,
+      "zona_V_quintas_turisticas_trifasico": 2065600
+    }
+  },
+
+  "agua_potable": {
+    "reconexion_mora": 17200,
+    "reconexion_a_pedido": 15500,
+    "desconexion_transitoria": 15500,
+    "costo_conexion_c_materiales": 71300,
+    "costo_conexion_contado_zona_estandar": 306100,
+    "costo_conexion_zona_II_sin_redes": 658300
+  },
+
+  "television": {
+    "reconexion_mora": 15000,
+    "reconexion_a_pedido": 15000,
+    "desconexion_transitoria": 14400,
+    "traslado_conexion": 45000,
+    "derivacion_interna": 24300,
+    "aviso_corte": 2510,
+    "reclamo_acometida_cortada": 9500,
+    "conexion_nueva_zona1_centro_montecarlo": 80800,
+    "conexion_nueva_zona2_ftth": 176770,
+    "conexion_nueva_zona3_rural": 264220
+  },
+
+  "internet": {
+    "reconexion_mora": 15000,
+    "reconexion_a_pedido": 15000,
+    "desconexion_transitoria": 14400,
+    "cambio_clave": 9500,
+    "reconfiguracion_equipo": 9500,
+    "traslado_conexion": 45000,
+    "aviso_corte": 2510,
+    "reclamo_acometida_cortada": 9500
+  },
+
+  "cloacas": {
+    "conexion_redes_existentes_sin_empedrado": 294800,
+    "conexion_zona_II_sin_red": 472000
+  },
+
+  "mano_de_obra": {
+    "nota": "Valores c/IVA 21% — vigencia 02/03/2026",
+    "hora_hombre_normal": 27423,
+    "tasa_interes_financiacion_mo_y_vehiculos": 0.032
+  },
+
+  "aranceles_presupuestos": {
+    "obras_habitacionales_energia_agua_tv": 72400,
+    "obras_part_e_instituciones": 12700,
+    "nota": "Arancel para componer presupuestos en obras habitacionales"
+  },
+
+  "intereses_recargos": {
+    "tasa_mora_mensual": 0.039,
+    "tasa_financiacion_mo_vehiculos": 0.032
+  },
+
+  "servicios_sepelios": {
+    "estandar_no_adheridos": 884000,
+    "basico_municipal": 237000,
+    "mejorado_municipal": 354000,
+    "cremacion_no_adheridos": 619000,
+    "nota": "Precios incluyen IVA 21%"
+  }
+}
