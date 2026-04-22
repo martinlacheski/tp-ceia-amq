@@ -16,6 +16,8 @@ dependencies = [
     "streamlit-folium>=0.25.0",
     "scikit-learn",
     "xgboost",
+    "lightgbm",
+    "catboost",
 ]
 
 [build-system]
