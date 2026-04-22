@@ -1,11 +1,43 @@
 from __future__ import annotations
 
+import json
 from collections.abc import Iterable
 from pathlib import Path
 
 import pandas as pd
 
 from helpers.paths import INTERMEDIATE_DIR, PROCESSED_DIR, REPORTS_DIR
+
+
+# Lazy-loaded cache for zone names
+_zone_names_cache: dict[str, str] | None = None
+
+
+def get_zone_name(zona_id: str) -> str:
+    """Return human-readable zone name. Uses JSON override > Google geocoding."""
+    global _zone_names_cache
+    if _zone_names_cache is None:
+        # Try JSON override first (informe/zonas_nombres.json)
+        json_path = Path(__file__).resolve().parents[1] / "informe" / "zonas_nombres.json"
+        if json_path.exists():
+            with open(json_path, "r", encoding="utf-8") as f:
+                _zone_names_cache = json.load(f)
+        else:
+            # Fallback to geocoded parquet
+            geocoded_path = Path(__file__).resolve().parents[1] / "data" / "processed" / "zonas_geocoded.parquet"
+            if geocoded_path.exists():
+                df = pd.read_parquet(geocoded_path)
+                _zone_names_cache = {row["zona_id"]: row["zone_name"] for _, row in df.iterrows()}
+            else:
+                _zone_names_cache = {}
+    return _zone_names_cache.get(zona_id, zona_id)
+
+
+def apply_zone_names(df: pd.DataFrame, zona_col: str = "zona_id", new_col: str = "zona_nombre") -> pd.DataFrame:
+    """Add zona_nombre column to df based on zona_id, using JSON override > geocoding."""
+    df = df.copy()
+    df[new_col] = df[zona_col].apply(get_zone_name)
+    return df
 
 
 DATASET_PATHS: dict[str, Path] = {

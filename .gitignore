@@ -1,0 +1,12 @@
+.env
+__pycache__/
+*.py[cod]
+*.pyo
+.ipynb_checkpoints/
+
+informe/
+informe/informe.md
+informe/mapa_zonas_criticas.html
+informe/__pycache__/
+
+notebooks/catboost_info/
