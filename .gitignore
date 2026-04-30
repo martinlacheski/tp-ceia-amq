@@ -4,6 +4,9 @@ __pycache__/
 *.pyo
 .ipynb_checkpoints/
 
+# SDD artifacts
+.atl/
+
 informe/
 informe/informe.md
 informe/mapa_zonas_criticas.html

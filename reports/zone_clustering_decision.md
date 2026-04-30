@@ -10,7 +10,7 @@
 ## Resumen
 
 - Zonas generadas: `43`.
-- Destinos únicos clusterizados: `14772`.
+- Destinos únicos clusterizados: `14774`.
 - Reclamos cubiertos por el mapeo: `159030`.
 - `eps` efectivo: `2.5` km.
 - Clusters que exceden el diámetro objetivo: `0`.

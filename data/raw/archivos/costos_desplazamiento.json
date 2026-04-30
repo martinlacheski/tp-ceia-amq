@@ -1,0 +1,22 @@
+{
+  "descripcion": "Costos de combustible y rendimiento de vehículos CEML para cálculo de costo de desplazamiento por trámite",
+  "fuente": "Datos operativos CEML + precio de mercado local (mar-2026)",
+  "vigencia": "2026-03",
+  "combustible": {
+    "tipo": "Diesel",
+    "precio_por_litro_ars": 2425.0,
+    "moneda": "ARS",
+    "nota": "Precio Diesel en Montecarlo, Misiones - marzo 2026"
+  },
+  "vehiculo_promedio_flota": {
+    "rendimiento_km_por_litro": 10.0,
+    "costo_por_km_ars": 242.5,
+    "calculo": "2425 ARS/litro ÷ 10 km/litro = 242.5 ARS/km",
+    "nota": "Rendimiento promedio flota CEML (pickup/utilitario de servicio)"
+  },
+  "formula_costo_viaje": {
+    "descripcion": "Costo total de desplazamiento ida y vuelta para un trámite",
+    "formula": "costo_ars = distancia_km_ida_vuelta × costo_por_km_ars",
+    "ejemplo": "10 km ida + 10 km vuelta = 20 km × 242.5 = ARS 4,850 por visita"
+  }
+}

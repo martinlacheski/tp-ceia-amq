@@ -8,9 +8,9 @@
 ## Resultados
 
 - Días resumidos: `1915`.
-- Hotspots únicos: `29787`.
-- Costo operativo total resumido: `1211976276.77` ARS.
-- Reclamos ruteados acumulados: `159030`.
+- Hotspots únicos: `29789`.
+- Costo operativo total resumido: `2964201104.10` ARS.
+- Reclamos ruteados acumulados: `158978`.
 
 ## Hotspot líder actual
 
@@ -21,7 +21,7 @@
 - `direccion_referencia`: `LAHARRAGUE`.
 - `reclamos_total`: `234`.
 - `reclamos_ruteados_ok`: `234`.
-- `costo_operativo_total_ars`: `4958098.47`.
+- `costo_operativo_total_ars`: `12130688.27`.
 
 ## Outputs generados
 

@@ -1,0 +1,10 @@
+{
+  "descripcion": "Costos de mano de obra para equipos en terreno",
+  "fuente": "Recursos Humanos CEML",
+  "vigencia": "2026-03",
+  "cuadrilla_estandar": {
+    "composicion": "Un jefe + un ayudante",
+    "costo_hora_ars": 33187.0,
+    "nota": "Costo laboral base por cada hora que la cuadrilla se encuentra operando o trasladándose"
+  }
+}

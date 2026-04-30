@@ -45,12 +45,14 @@ def _load_json(path: Path) -> dict[str, object]:
 
 def _build_costos_ref() -> pd.DataFrame:
     costos_path = require_input("costos_vehiculos")
+    mano_obra_path = require_input("costos_mano_obra")
     tarifas_path = require_input("tarifas_ceml")
     costos_payload = _load_json(costos_path)
+    mano_obra_payload = _load_json(mano_obra_path)
     tarifas_payload = _load_json(tarifas_path)
 
     costo_km = float(costos_payload["vehiculo_promedio_flota"]["costo_por_km_ars"])
-    costo_hora = float(tarifas_payload["mano_de_obra"]["hora_hombre_normal"])
+    costo_hora = float(mano_obra_payload["cuadrilla_estandar"]["costo_hora_ars"])
 
     costos_ref = pd.DataFrame(
         [
@@ -60,7 +62,7 @@ def _build_costos_ref() -> pd.DataFrame:
                 "costo_hora": costo_hora,
                 "combustible_tipo": costos_payload["combustible"]["tipo"],
                 "combustible_precio_litro_ars": float(costos_payload["combustible"]["precio_por_litro_ars"]),
-                "rendimiento_km_litro": float(costos_payload["vehiculo_promedio_flota"]["rendimiento_km_por_litro"]),
+                "rendimiento_km_litro": float(costos_payload["combustible"]["consumo_litros_por_100km"]),
                 "tarifa_version": tarifas_payload["version"],
             }
         ]
@@ -179,8 +181,10 @@ def _compute_costing_outputs() -> tuple[pd.DataFrame, pd.DataFrame, dict[str, in
     costo_km_base = float(costos_ref.iloc[0]["costo_km"])
     costo_hora_base = float(costos_ref.iloc[0]["costo_hora"])
     if ok_mask.any():
-        enriched.loc[ok_mask, "distance_km"] = enriched.loc[ok_mask, "distance_m"].astype(float).div(1000)
-        enriched.loc[ok_mask, "duration_h"] = enriched.loc[ok_mask, "duration_s"].astype(float).div(3600)
+        # Multiplicamos por 2.0 para que todas las métricas de distancia y tiempo (y por ende costo) sean Ida y Vuelta
+        enriched.loc[ok_mask, "distance_km"] = enriched.loc[ok_mask, "distance_m"].astype(float).div(1000) * 2.0
+        enriched.loc[ok_mask, "duration_h"] = enriched.loc[ok_mask, "duration_s"].astype(float).div(3600) * 2.0
+        
         enriched.loc[ok_mask, "costo_km_ars"] = enriched.loc[ok_mask, "distance_km"].astype(float).mul(costo_km_base)
         enriched.loc[ok_mask, "costo_hora_ars"] = enriched.loc[ok_mask, "duration_h"].astype(float).mul(costo_hora_base)
         enriched.loc[ok_mask, "costo_operativo_ars"] = (

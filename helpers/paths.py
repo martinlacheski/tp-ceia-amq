@@ -20,6 +20,7 @@ MANDATORY_INPUTS = {
     "tramites": RAW_CEML_DIR / "tramites.parquet",
     "tramites_tareas": RAW_CEML_DIR / "tramites_tareas.parquet",
     "costos_vehiculos": RAW_ARCHIVOS_DIR / "costos_vehiculos.json",
+    "costos_mano_obra": RAW_ARCHIVOS_DIR / "costos_mano_obra.json",
     "sedes_servicios": RAW_ARCHIVOS_DIR / "sedes_servicios.json",
     "tarifas_ceml": RAW_ARCHIVOS_DIR / "tarifas_ceml_2026_03.json",
     "tasas_pdf": RAW_ARCHIVOS_DIR / "Tasas 03-2026.pdf",

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+import json
 from pathlib import Path
 
 import folium
@@ -46,6 +47,23 @@ DEFAULT_METRICS = [
     "lluvia_mm",
     "y_reclamos_t+1",
 ]
+
+
+@st.cache_data(show_spinner=False)
+def get_zone_name_map() -> dict[str, str]:
+    mapping = {}
+    # 1. Cargar desde geocoded (nombres automáticos)
+    geocoded_path = PROJECT_ROOT / "data/processed/zonas_geocoded.parquet"
+    if geocoded_path.exists():
+        df_geo = pd.read_parquet(geocoded_path)
+        mapping.update(dict(zip(df_geo["zona_id"].astype(str), df_geo["zone_name"])))
+    
+    # 2. Cargar desde nombres manuales (sobrescribe automáticos)
+    json_path = PROJECT_ROOT / "informe/zonas_nombres.json"
+    if json_path.exists():
+        with open(json_path, "r", encoding="utf-8") as f:
+            mapping.update(json.load(f))
+    return mapping
 
 
 @st.cache_data(show_spinner=False)
@@ -119,10 +137,20 @@ def _apply_filters(df: pd.DataFrame, dataset_name: str, claims_df: pd.DataFrame)
             filtered = filtered.loc[filtered[date_column].between(date_range[0], date_range[1], inclusive="both")]
 
     if "zona_id" in filtered.columns:
-        zones = sorted(filtered["zona_id"].dropna().astype(str).unique().tolist())
-        selected_zones = st.sidebar.multiselect("Zona", options=zones, default=[])
-        if selected_zones:
-            filtered = filtered.loc[filtered["zona_id"].astype(str).isin(selected_zones)]
+        zone_map = get_zone_name_map()
+        zone_ids = sorted(filtered["zona_id"].dropna().unique().tolist())
+        # Crear opciones legibles para el multiselect
+        zone_options = {str(zid): f"{zone_map.get(str(zid), str(zid))}" for zid in zone_ids}
+        
+        selected_zone_names = st.sidebar.multiselect(
+            "Zona", 
+            options=list(zone_options.keys()), 
+            format_func=lambda x: zone_options[x],
+            default=[]
+        )
+        if selected_zone_names:
+            filtered = filtered.loc[filtered["zona_id"].astype(str).isin(selected_zone_names)]
+            selected_zones = selected_zone_names  # Mantener los IDs para el filtrado de reclamos relacionados
 
     related_claims = _filter_related_claims(
         claims_df,
@@ -197,17 +225,24 @@ def _render_claims_folium_map(claim_map_df: pd.DataFrame) -> None:
 
     for _, row in claim_map_df.iterrows():
         fecha = pd.to_datetime(row.get("fecha"), errors="coerce")
+        zona_id = str(row.get("zona_id", ""))
+        zona_name = get_zone_name_map().get(zona_id, zona_id)
         popup_html = "".join(
             [
                 '<div style="font-size:12px; min-width:240px">',
                 f"<b>Reclamo:</b> {_format_popup_value(row.get('reclamo_id'))}<br>",
                 f"<b>Fecha:</b> {fecha.strftime('%d/%m/%Y %H:%M') if pd.notna(fecha) else '—'}<br>",
-                f"<b>Zona:</b> {_format_popup_value(row.get('zona_id'))}<br>",
+                f"<b>Zona:</b> {zona_name}<br>",
                 f"<b>Sede:</b> {_format_popup_value(row.get('sede_id'))}<br>",
                 f"<b>Servicio:</b> {_format_popup_value(_first_present(row.get('servicio_normalizado'), row.get('servicio')))}<br>",
                 f"<b>Motivo:</b> {_format_popup_value(row.get('motivo'))}<br>",
                 f"<b>Estado geo:</b> {_format_popup_value(row.get('estado_geo'))}<br>",
                 f"<b>Lat/Lon:</b> {row['lat']:.5f}, {row['lon']:.5f}<br>",
+                '<hr style="margin:5px 0">',
+                f"<b>Costo Vehicular:</b> ARS {_format_number(row.get('costo_km_ars'))}<br>",
+                f"<b>Costo Laboral Viaje:</b> ARS {_format_number(row.get('costo_hora_ars'))}<br>",
+                f"<b>Costo Laboral Res.:</b> ARS {_format_number(row.get('costo_resolucion_base_ars'))}<br>",
+                f"<b>Costo Total:</b> ARS {_format_number(row.get('costo_total_compuesto_ars'))}<br>",
                 "</div>",
             ]
         )
@@ -306,10 +341,12 @@ def _render_summary_tab(filtered: pd.DataFrame, date_column: str | None, filter_
     col1, col2 = st.columns(2)
     with col1:
         if "zona_id" in filtered.columns and not filtered.empty:
+            zone_map = get_zone_name_map()
             top_zones = filtered["zona_id"].astype("string").value_counts().head(10).rename_axis("zona_id").reset_index(name="filas")
+            top_zones["zona"] = top_zones["zona_id"].map(lambda x: zone_map.get(x, x))
             st.markdown("**Zonas con más actividad**")
-            st.bar_chart(top_zones.set_index("zona_id"))
-            st.dataframe(top_zones, use_container_width=True, hide_index=True)
+            st.bar_chart(top_zones.set_index("zona")["filas"])
+            st.dataframe(top_zones[["zona", "filas"]], use_container_width=True, hide_index=True)
     with col2:
         related_claims = filter_context["claims_filtered"]
         if isinstance(related_claims, pd.DataFrame) and not related_claims.empty:
@@ -365,7 +402,9 @@ def _render_maps_tab(filtered: pd.DataFrame, dataset_name: str, filter_context: 
             f"Mapa principal con Folium, centrado automático, clusters y popups. Se muestran {_format_number(len(claim_map_df))} reclamos válidos del whitelist de servicios."
         )
         _render_claims_folium_map(claim_map_df)
-        preview_columns = [column for column in ["reclamo_id", "fecha", "zona_id", "sede_id", "servicio_normalizado", "motivo"] if column in claim_map_df.columns]
+        zone_map = get_zone_name_map()
+        claim_map_df["zona"] = claim_map_df["zona_id"].astype(str).map(lambda x: zone_map.get(x, x))
+        preview_columns = [column for column in ["reclamo_id", "fecha", "zona", "sede_id", "servicio_normalizado", "motivo"] if column in claim_map_df.columns]
         st.dataframe(claim_map_df[preview_columns].head(30), use_container_width=True, hide_index=True)
 
     st.subheader("Mapa de zonas")
@@ -379,8 +418,11 @@ def _render_maps_tab(filtered: pd.DataFrame, dataset_name: str, filter_context: 
         return
 
     _render_zones_folium_map(zone_map_df)
+    zone_map = get_zone_name_map()
+    zone_map_df["zona"] = zone_map_df["zona_id"].astype(str).map(lambda x: zone_map.get(x, x))
+    display_cols = [c for c in ["zona", "reclamos_totales", "servicio_principal", "costo_total_compuesto_ars"] if c in zone_map_df.columns]
     st.dataframe(
-        zone_map_df.sort_values("reclamos_totales", ascending=False, kind="stable") if "reclamos_totales" in zone_map_df.columns else zone_map_df,
+        zone_map_df[display_cols].sort_values("reclamos_totales", ascending=False, kind="stable") if "reclamos_totales" in zone_map_df.columns else zone_map_df[display_cols],
         use_container_width=True,
         hide_index=True,
     )
@@ -403,6 +445,73 @@ def _render_profile_tab(filtered: pd.DataFrame) -> None:
         st.dataframe(categorical_profile(filtered, categorical_candidates), use_container_width=True, hide_index=True)
 
 
+def _render_points_tab(claims_df: pd.DataFrame) -> None:
+    st.subheader("Análisis de Puntos Geográficos Críticos")
+    st.caption("Agrupación por `destino_key` (coordenadas exactas). Permite identificar transformadores o puntos de red con recurrencia costosa.")
+
+    if claims_df.empty:
+        st.info("No hay datos de reclamos disponibles.")
+        return
+
+    # Agrupar por destino_key
+    zone_map = get_zone_name_map()
+    points = (
+        claims_df.groupby(["destino_key", "lat", "lon"], as_index=False)
+        .agg(
+            reclamos=("reclamo_id", "count"),
+            costo_vehicular=("costo_km_ars", "sum"),
+            costo_laboral_viaje=("costo_hora_ars", "sum"),
+            costo_laboral_resolucion=("costo_resolucion_base_ars", "sum"),
+            costo_total=("costo_total_compuesto_ars", "sum"),
+            localidad=("localidad", lambda x: x.mode().iat[0] if not x.mode().empty else "—"),
+            zona_id=("zona_id", lambda x: str(x.mode().iat[0]) if not x.mode().empty else "—"),
+        )
+        .sort_values("costo_total", ascending=False)
+    )
+    points["zona"] = points["zona_id"].map(lambda x: zone_map.get(x, x))
+
+    col1, col2 = st.columns([2, 1])
+    with col2:
+        st.metric("Puntos únicos", _format_number(len(points)))
+        st.metric("Costo Promedio / Punto", f"ARS {_format_number(points['costo_total'].mean())}")
+
+    with col1:
+        st.markdown("**Top 10 Puntos por Costo Acumulado**")
+        st.bar_chart(points.head(10).set_index("destino_key")["costo_total"])
+
+    st.markdown("**Detalle por Punto (Destino)**")
+    formatted_points = points.copy()
+    for col in ["costo_vehicular", "costo_laboral_viaje", "costo_laboral_resolucion", "costo_total"]:
+        formatted_points[col] = formatted_points[col].map(lambda x: f"ARS {_format_number(x)}")
+    
+    # Reordenar y ocultar ID
+    display_cols = ["localidad", "zona", "reclamos", "costo_vehicular", "costo_laboral_viaje", "costo_laboral_resolucion", "costo_total", "lat", "lon"]
+    st.dataframe(formatted_points[display_cols], use_container_width=True, hide_index=True)
+
+    st.subheader("Mapa de Puntos Críticos (Top 50)")
+    top_50 = points.head(50).copy()
+    center = [float(top_50["lat"].median()), float(top_50["lon"].median())]
+    m = folium.Map(location=center, zoom_start=12)
+    
+    for _, row in top_50.iterrows():
+        popup_text = f"""
+        <b>Punto:</b> {row['destino_key']}<br>
+        <b>Localidad:</b> {row['localidad']}<br>
+        <b>Reclamos:</b> {row['reclamos']}<br>
+        <b>Costo Total:</b> {row['costo_total']}
+        """
+        folium.CircleMarker(
+            location=[row["lat"], row["lon"]],
+            radius=5 + min(row["reclamos"], 20),
+            color="red",
+            fill=True,
+            popup=folium.Popup(popup_text, max_width=200),
+            tooltip=f"Punto: {row['destino_key']}"
+        ).add_to(m)
+    
+    st_folium(m, height=500, width='stretch', returned_objects=[])
+
+
 def main() -> None:
     st.title("Exploración interactiva del TP")
     st.caption("Vista académica, simple y defendible para explorar servicios reales, entender zonas y revisar calidad de los datasets del TP.")
@@ -423,21 +532,24 @@ def main() -> None:
     st.dataframe(overview_df, use_container_width=True, hide_index=True)
     _show_summary_metrics(filtered)
 
-    tabs = st.tabs(["Resumen general", "Servicios / categorías", "Mapas", "Tabla filtrada", "Perfil / calidad"])
+    tabs = st.tabs(["Resumen general", "Análisis por punto", "Servicios / categorías", "Mapas", "Tabla filtrada", "Perfil / calidad"])
 
     with tabs[0]:
         _render_summary_tab(filtered, date_column, filter_context)
 
     with tabs[1]:
-        _render_service_tab(filtered, filter_context)
+        _render_points_tab(filter_context["claims_filtered"])
 
     with tabs[2]:
-        _render_maps_tab(filtered, dataset_name, filter_context)
+        _render_service_tab(filtered, filter_context)
 
     with tabs[3]:
-        st.dataframe(filtered, use_container_width=True, hide_index=True)
+        _render_maps_tab(filtered, dataset_name, filter_context)
 
     with tabs[4]:
+        st.dataframe(filtered, use_container_width=True, hide_index=True)
+
+    with tabs[5]:
         _render_profile_tab(filtered)
 
 

@@ -1,11 +1,11 @@
 # Resumen de construcción `zona-diario`
 
-- Filas `zona_diario_base`: `75494`.
-- Filas `zona_diario_supervisado`: `75494`.
+- Filas `zona_diario_base`: `76403`.
+- Filas `zona_diario_supervisado`: `76403`.
 - Zonas únicas: `43`.
 - Rango temporal base: `2021-01-01` → `2026-03-31`.
-- Días con reclamos: `25791`.
-- Días sin reclamos pero retenidos para historial/targets: `49703`.
+- Días con reclamos: `25806`.
+- Días sin reclamos pero retenidos para historial/targets: `50597`.
 
 ## Features iniciales incluidas
 

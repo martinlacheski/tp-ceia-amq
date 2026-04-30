@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass
+import json
 from pathlib import Path
 
 import numpy as np
@@ -774,21 +775,25 @@ def build_zona_diario_artifacts(
     reclamos_zonificados = reclamos.merge(zona_lookup, on="destino_key", how="left", validate="many_to_one")
     reclamos_zonificados["fecha"] = pd.to_datetime(reclamos_zonificados["fecha_reclamo"]).dt.normalize()
     reclamos_zonificados["traslado_min"] = reclamos_zonificados["duration_s"].astype(float).div(60.0)
-    reclamos_zonificados["resolucion_base_min"] = float(service_base_minutes)
+    # Cargar tiempos de resolución dinámicos
+    tiempos_path = PROCESSED_DIR / "tiempos_resolucion_localidad.json"
+    if tiempos_path.exists():
+        with open(tiempos_path, "r", encoding="utf-8") as f:
+            tiempos_map = json.load(f)
+        global_fallback = tiempos_map.get("GLOBAL_FALLBACK", float(service_base_minutes))
+        reclamos_zonificados["resolucion_base_min"] = reclamos_zonificados["localidad"].map(tiempos_map).fillna(global_fallback)
+    else:
+        reclamos_zonificados["resolucion_base_min"] = float(service_base_minutes)
     reclamos_zonificados["tiempo_total_operativo_min"] = (
         reclamos_zonificados["traslado_min"].fillna(0.0) + reclamos_zonificados["resolucion_base_min"]
     )
     reclamos_zonificados["resolucion_base_h"] = reclamos_zonificados["resolucion_base_min"].div(60.0)
-    reclamos_zonificados["combustible_litros"] = reclamos_zonificados["distance_km"].astype(float).div(10.0)
-    fuel_price = float(costos_ref.iloc[0]["combustible_precio_litro_ars"])
-    reclamos_zonificados["costo_combustible_ars"] = reclamos_zonificados["combustible_litros"].fillna(0.0).mul(fuel_price)
     reclamos_zonificados["costo_resolucion_base_ars"] = (
         reclamos_zonificados["resolucion_base_h"] * reclamos_zonificados["costo_hora_base_ars"].astype(float)
     )
     reclamos_zonificados["costo_total_compuesto_ars"] = (
         reclamos_zonificados["costo_operativo_ars"].fillna(0.0)
         + reclamos_zonificados["costo_resolucion_base_ars"].fillna(0.0)
-        + reclamos_zonificados["costo_combustible_ars"].fillna(0.0)
     )
 
     validate_processed_contract(
@@ -837,10 +842,8 @@ def build_zona_diario_artifacts(
             traslado_min_promedio=("traslado_min", "mean"),
             resolucion_base_min_total=("resolucion_base_min", "sum"),
             tiempo_total_operativo_min=("tiempo_total_operativo_min", "sum"),
-            combustible_litros_total=("combustible_litros", "sum"),
             costo_operativo_total_ars=("costo_operativo_ars", "sum"),
             costo_resolucion_base_ars=("costo_resolucion_base_ars", "sum"),
-            costo_combustible_ars=("costo_combustible_ars", "sum"),
             costo_total_compuesto_ars=("costo_total_compuesto_ars", "sum"),
         )
         .sort_values(["zona_id", "fecha"], kind="stable")

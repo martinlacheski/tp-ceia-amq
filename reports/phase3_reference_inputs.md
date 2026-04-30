@@ -31,11 +31,11 @@
 ## Costos base
 
 - `vehiculo_tipo`: `vehiculo_promedio_flota`
-- `costo_km`: `242.5` ARS/km
-- `costo_hora`: `27423.0` ARS/hora
-- `combustible_tipo`: `nafta`
-- `combustible_precio_litro_ars`: `2425.0`
-- `rendimiento_km_litro`: `10.0`
+- `costo_km`: `305.73` ARS/km
+- `costo_hora`: `33187.0` ARS/hora
+- `combustible_tipo`: `Diesel`
+- `combustible_precio_litro_ars`: `2461.0`
+- `rendimiento_km_litro`: `9.0`
 
 ## Outputs generados
 
